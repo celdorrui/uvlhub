@@ -22,14 +22,16 @@ RUN apt-get clean \
 # Set the working directory in the container to /app
 WORKDIR /app
 
-# Copy files
+# PRIMERO copia los archivos de configuración esenciales
+COPY pyproject.toml .
+COPY requirements.txt .
+COPY package.json .
+
+# LUEGO copia las carpetas
 COPY app/ ./app
 COPY core/ ./core
 COPY rosemary/ ./rosemary
 COPY migrations/ ./migrations
-
-# Copy requirements.txt into the working directory /app
-COPY requirements.txt .
 
 # Removes cache at the build stage
 RUN find . -type d -name "__pycache__" -exec rm -r {} + && \
@@ -52,11 +54,10 @@ RUN pip install --no-cache-dir --upgrade pip
 # Install any needed packages specified in requirements.txt
 RUN pip install -r requirements.txt
 
-# Install Rosemary
+# Install Rosemary - AHORA SÍ ENCONTRARÁ pyproject.toml
 RUN pip install -e ./
 
 # Install npm dependencies
-COPY package.json .
 RUN npm install
 
 # Compile webpack files
